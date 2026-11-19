@@ -283,26 +283,13 @@ public abstract class EMFModelPart extends ModelPart {
                 //reset render settings
                 provider.getBuffer(originalLayer);
             }else{
-                //could be a sprite originally, if so lets ignore trying to reset the texture at all to its original
                 //#if MC >= 26.2
-                //$$ URenderTypeToVertexConsumer provider = new URenderTypeToVertexConsumer(null) {
-                //$$     @Override
-                //$$     public VertexConsumer getBuffer(RenderType type) {
-                //$$         //TODO probably wrong investigate further
-                //$$         var draw = Minecraft.getInstance().gameRenderer.renderBuffers().stagedVertexBuffer().appendDraw(
-                //$$                 type.format(),
-                                //#if MC >= 26.3
-                                //$$ com.mojang.renderpearl.api.pipeline.PrimitiveTopology.QUADS
-                                //#else
-                                //$$ com.mojang.blaze3d.PrimitiveTopology.QUADS
-                                //#endif
-                //$$                 );
-                //$$         return Minecraft.getInstance().gameRenderer.renderBuffers().stagedVertexBuffer().getVertexBuilder(draw);
-                //$$     }
-                //$$ };
+                //$$ // Avoid allocating additional staged draws for vertx consumers that do not support ETF overrides
+                //$$ // Use the original vertex consumer instead.
+                //$$ renderLikeETF(matrices, vertices, light, overlay, k);
                 //#else
                 URenderTypeToVertexConsumer provider = new URenderTypeToVertexConsumer(Minecraft.getInstance().renderBuffers().bufferSource());
-                //#endif
+                
                 renderTextureOverrideWithoutReset(provider, matrices, light, overlay,
                         //#if MC >= 12100
                         k
@@ -310,6 +297,7 @@ public abstract class EMFModelPart extends ModelPart {
                         //$$ red, green, blue, alpha
                         //#endif
                 );
+                //#endif
             }
         }
         //else cancel out render
